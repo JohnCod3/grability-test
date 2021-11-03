@@ -1,0 +1,64 @@
+service: grability-test
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: '20201221'
+
+  httpApi:
+    cors: true
+
+functions:
+  listUsers:
+    handler: src/handlers/users.list
+    events:
+      - httpApi:
+          path: /users
+          method: GET
+  createUser:
+    handler: src/handlers/users.create
+    events:
+      - httpApi:
+          path: /users
+          method: POST
+  getUser:
+    handler: src/handlers/users.get
+    events:
+      - httpApi:
+          path: /users/{userId}
+          method: GET
+      - httpApi:
+          path: /users/{userId}/{collection}
+          method: GET
+      - httpApi:
+          path: /users/{userId}/{collection}/{orderId}
+          method: GET
+  listProducts:
+    handler: src/handlers/products.list
+    events:
+      - httpApi:
+          path: /products
+          method: GET
+  createProduct:
+    handler: src/handlers/products.create
+    events:
+      - httpApi:
+          path: /products
+          method: POST
+  createOrder:
+    handler: src/handlers/orders.create
+    events:
+      - httpApi:
+          path: /orders
+          method: POST
+  createTransaction:
+    handler: src/handlers/transactions.create
+    events:
+      - httpApi:
+          path: /transactions/{type}
+          method: POST
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin

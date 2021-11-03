@@ -1,0 +1,80 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  credit
+  debit
+}
+
+model Transaction {
+  id          Int             @id @default(autoincrement())
+  user        User            @relation(fields: [userId], references: [id])
+  userId      Int
+  type        TransactionType
+  description String          @db.VarChar(255)
+  amount      Decimal         @db.Money
+  created_at  DateTime        @default(now()) @db.Timestamptz
+
+  @@map("transactions")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  email      String   @unique @db.VarChar(100)
+  balance    Decimal  @default(0) @db.Money
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  orders       Order[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Order {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  subtotal   Decimal  @db.Money
+  total      Decimal  @db.Money
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  items OrderProduct[]
+
+  @@map("orders")
+}
+
+model OrderProduct {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  tax       Decimal @db.Decimal(5, 2)
+  price     Decimal @db.Money
+  quantity  Int     @db.SmallInt
+  subtotal  Decimal @db.Money
+  total     Decimal @db.Money
+
+  @@map("order_product")
+}
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(255)
+  description String? @db.Text
+  image       String? @db.VarChar(255)
+  tax         Decimal @default(0) @db.Decimal(5, 2)
+  price       Decimal @db.Money
+
+  orders OrderProduct[]
+
+  @@map("products")
+}
